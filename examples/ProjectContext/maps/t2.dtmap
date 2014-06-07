@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="delta3dMap" xsi:schemaLocation="delta3dMap map.xsd">
+    <header>
+        <name>t2</name>
+        <description>test</description>
+        <author></author>
+        <comment></comment>
+        <copyright></copyright>
+        <createTimestamp>2014-05-08T15:18:26-05:00</createTimestamp>
+        <lastUpdateTimestamp>2014-05-08T15:18:28-05:00</lastUpdateTimestamp>
+        <editorVersion>2.7.5</editorVersion>
+        <schemaVersion>1.0</schemaVersion>
+    </header>
+    <libraries></libraries>
+    <actors></actors>
+    <groups></groups>
+    <drawablehierarchy></drawablehierarchy>
+    <presetCameras></presetCameras>
+</map>
