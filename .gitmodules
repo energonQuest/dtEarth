@@ -1,0 +1,3 @@
+[submodule "3rdParty/src/dtEarth/ext/src/osgearth"]
+	path = 3rdParty/src/dtEarth/ext/src/osgearth
+	url = https://github.com/gwaldron/osgearth.git

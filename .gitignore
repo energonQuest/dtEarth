@@ -1,0 +1,57 @@
+# generated
+.sbas/
+.svn/
+*.pdb
+*.idb
+*.exp
+*.ilk
+*.log
+logs
+deprecated
+*.html
+*.htm
+*.dep
+*.obj
+*.ncb
+*.manifest
+*.manifest.res
+*.pch
+*.suo
+*.lck
+*.tmp
+Debug
+Publish
+ipch
+*.sdf
+*.tlog
+*.ncb
+*.dir/
+CMakeFiles/
+*.cache
+
+# media
+*.docx
+*.flt
+*.cmf
+*.crf
+*.caf
+*.csf
+*.rbody
+*.odt
+*.pptx
+*.ods
+*.bak
+*.attr
+.DS_Store
+Thumbs.db
+
+
+# installs
+*.zip
+*.msi
+*.7z
+
+# archives
+
+#
+dev/src/deployment/*.exe
