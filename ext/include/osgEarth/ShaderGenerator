@@ -1,0 +1,177 @@
+/* -*-c++-*- */
+/* osgEarth - Dynamic map generation toolkit for OpenSceneGraph
+ * Copyright 2008-2011 Pelican Mapping
+ * http://osgearth.org
+ *
+ * osgEarth is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>
+ */
+
+#ifndef OSGEARTH_SHADER_GENERATOR_H
+#define OSGEARTH_SHADER_GENERATOR_H 1
+
+#include <osgEarth/Common>
+#include <osgEarth/StateSetCache>
+#include <osgEarth/VirtualProgram>
+#include <osg/NodeVisitor>
+#include <osg/State>
+#include <sstream>
+#include <set>
+
+// forward declarations
+namespace osg
+{
+    class TexEnv;
+    class TexGen;
+    class TexMat;
+    class Texture1D;
+    class Texture2D;
+    class Texture3D;
+    class TextureRectangle;
+    class Texture2DArray;
+    class Texture2DMultisample;
+}
+
+namespace osgEarth
+{
+    /**
+     * Utility class that will traverse a scene graph and generate a
+     * set of VirtualProgram attributes to render it as best it can using
+     * shaders.
+     *
+     * Usage:
+     *
+     *   ShaderGenerator gen;
+     *   gen.run( graph );
+     *
+     * If osgEarth detects a lack of GLSL support, the ShaderGenerator
+     * will do nothing.
+     */
+    class OSGEARTH_EXPORT ShaderGenerator : public osg::NodeVisitor
+    {
+    public:
+        /**
+         * Constructs a new shader generator
+         */
+        ShaderGenerator();
+
+        /**
+         * Sets the name to give any VP's we create
+         */
+        void setProgramName(const std::string& name);
+
+        /**
+         * Runs the shader generator and then optimizes state sharing when it's done.
+         */
+        void run(osg::Node* graph, StateSetCache* cache =0L);
+
+        /**
+         * Marks a node with a hint that the shader generator should ignore it in
+         * the future.
+         */
+        static void setIgnoreHint(osg::Object* object, bool ignore);
+
+        /**
+         * Whether an object has been marked for ignore 
+         */
+        static bool ignore(const osg::Object* object);
+
+    public:
+        /**
+         * User callback that lets you selectly reject shader generation for
+         * specific state attributes.
+         */
+        struct OSGEARTH_EXPORT AcceptCallback : public osg::Referenced
+        {
+            /** Return true to generate shader code for the SA; false to ignore and skip it */
+            virtual bool accept(const osg::StateAttribute* sa) const =0;
+            virtual ~AcceptCallback() { }
+        };
+
+        /**
+         * Adds an acceptor callback that the generator will use to decide
+         * whether to ignore certain state attributes.
+         */
+        void addAcceptCallback(AcceptCallback* cb);
+
+
+    public:
+
+        /** dtor. */
+        virtual ~ShaderGenerator() { }
+
+
+    public: // osg::NodeVisitor
+
+        virtual void apply( osg::Node& );
+        virtual void apply( osg::Group& );
+        virtual void apply( osg::Geode& );
+        virtual void apply( osg::PagedLOD& );
+        virtual void apply( osg::ProxyNode& );
+        virtual void apply( osg::ClipNode& );
+
+
+    protected: // high-level entry points:
+
+        virtual void apply( osg::Drawable* );
+
+        virtual bool processGeometry(const osg::StateSet* stateSet, osg::ref_ptr<osg::StateSet>& replacement);
+
+        virtual bool processText(const osg::StateSet* stateSet, osg::ref_ptr<osg::StateSet>& replacement);
+
+
+    protected: // overridable texture handlers:
+
+        struct GenBuffers
+        {
+            std::stringstream vertHead, vertBody;
+            std::stringstream fragHead, fragBody;
+            osg::StateSet*    stateSet;
+        };
+
+        virtual bool apply(osg::Texture* tex, osg::TexGen* texgen, osg::TexEnv* texenv, osg::TexMat* texmat, int unit, GenBuffers& buf);
+
+        virtual bool apply(osg::TexEnv* texenv, int unit, GenBuffers& buf);
+
+        virtual bool apply(osg::TexGen* texgen, int unit, GenBuffers& buf);
+
+        virtual bool apply(osg::TexMat* texmat, int unit, GenBuffers& buf);
+
+        virtual bool apply(osg::Texture1D* tex, int unit, GenBuffers& buf);
+
+        virtual bool apply(osg::Texture2D* tex, int unit, GenBuffers& buf);
+
+        virtual bool apply(osg::Texture3D* tex, int unit, GenBuffers& buf);
+
+        virtual bool apply(osg::TextureRectangle* tex, int unit, GenBuffers& buf);
+
+        virtual bool apply(osg::Texture2DArray* tex, int unit, GenBuffers& buf);
+
+
+    protected:
+
+        osg::ref_ptr<osg::State> _state;
+
+        bool _active;
+
+        std::string _name;
+
+        typedef std::vector<osg::ref_ptr<AcceptCallback> > AcceptCallbackVector;
+        AcceptCallbackVector _acceptCallbacks;
+
+        bool accept(const osg::StateAttribute* sa) const;
+    };
+
+} // namespace osgEarth
+
+#endif // OSGEARTH_SHADER_GENERATOR_H

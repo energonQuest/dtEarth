@@ -1,0 +1,113 @@
+/* -*-c++-*- */
+/* osgEarth - Dynamic map generation toolkit for OpenSceneGraph
+* Copyright 2008-2013 Pelican Mapping
+* http://osgearth.org
+*
+* osgEarth is free software; you can redistribute it and/or modify
+* it under the terms of the GNU Lesser General Public License as published by
+* the Free Software Foundation; either version 2 of the License, or
+* (at your option) any later version.
+*
+* This program is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU Lesser General Public License for more details.
+*
+* You should have received a copy of the GNU Lesser General Public License
+* along with this program.  If not, see <http://www.gnu.org/licenses/>
+*/
+#ifndef OSGEARTHUTIL_TMS_PACKAGER_H
+#define OSGEARTHUTIL_TMS_PACKAGER_H
+
+#include <osgEarthUtil/Common>
+#include <osgEarth/Profile>
+#include <osgEarth/Map>
+#include <osgEarth/TileHandler>
+#include <osgEarth/TileVisitor>
+
+namespace osgEarth { namespace Util
+{
+    class TMSPackager;
+
+    /**
+    * A TileHandler that writes out a tile from a layer in a TMS structure. packages a tile in a TMS structure
+    */
+    class OSGEARTHUTIL_EXPORT WriteTMSTileHandler : public TileHandler
+    {
+    public:
+        WriteTMSTileHandler(TerrainLayer* layer, Map* map, TMSPackager* packager);
+
+        TerrainLayer* getLayer();
+
+        virtual bool handleTile( const TileKey& key );
+        virtual bool hasData( const TileKey& key ) const;
+        virtual std::string getProcessString() const;
+
+    protected:
+        
+        std::string getPathForTile( const TileKey &key );
+
+    protected:
+        osg::ref_ptr< TerrainLayer > _layer;
+        osg::ref_ptr< Map > _map;
+        TMSPackager* _packager;
+    };
+
+    /**
+    * Utility that reads tiles from an ImageLayer or ElevationLayer and stores
+    * the resulting data in a disk-based TMS (Tile Map Service) repository.
+    *
+    * See: http://wiki.osgeo.org/wiki/Tile_Map_Service_Specification
+    */
+    class OSGEARTHUTIL_EXPORT TMSPackager
+    {
+    public:
+        TMSPackager();      
+        const std::string& getDestination() const;
+
+        void setDestination( const std::string& destination);
+
+        const std::string& getExtension() const;
+
+        void setExtension( const std::string& extension);
+
+        void setElevationPixelDepth(unsigned value);
+        unsigned getElevationPixelDepth() const;
+
+        bool getOverwrite() const;
+        void setOverwrite(bool overwrite);
+
+        osgDB::Options* getOptions() const;
+        void setWriteOptions( osgDB::Options* options );        
+
+        const std::string& getLayerName() const;
+        void setLayerName( const std::string& name);
+
+        TileVisitor* getTileVisitor() const;
+
+        void setVisitor(TileVisitor* visitor);
+
+        void run( TerrainLayer* layer, Map* map );
+
+        void writeXML( TerrainLayer* layer, Map* map);
+
+    protected:
+
+        std::string _destination;
+        std::string _extension;
+        unsigned int _elevationPixelDepth;
+        std::string _layerName;
+        bool _overwrite;
+        osg::ref_ptr<osgDB::Options>    _writeOptions;
+
+        unsigned int _width;
+        unsigned int _height;
+
+        osg::ref_ptr< TileVisitor > _visitor;
+        osg::ref_ptr< WriteTMSTileHandler > _handler;
+
+    };
+
+} } // namespace osgEarth::Util
+
+#endif // OSGEARTHUTIL_TMS_PACKAGER_H
